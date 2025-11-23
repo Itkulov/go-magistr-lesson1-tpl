@@ -44,23 +44,23 @@ func main() {
 		var message string
 
 		memoryUsage := float64(usedMem) / float64(totalMem) * 100
-		if memoryUsage >= 100 {
+		if memoryUsage > 90 {
 			message = fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage)
 		}
 
-		if message == "" && loadAvg > 15 {
+		if message == "" && loadAvg > 30 {
 			message = fmt.Sprintf("Load Average is too high: %.0f", loadAvg)
 		}
 
 		if message == "" {
 			freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
-			if freeDiskMB < 25000 {
+			if freeDiskMB < 30000 {
 				message = fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB)
 			}
 		}
 
 		if message == "" {
-			availableNetMbit := (totalNet - usedNet) / 1000000
+			availableNetMbit := (totalNet - usedNet) / 125000
 			if availableNetMbit < 1000 {
 				message = fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit)
 			}
