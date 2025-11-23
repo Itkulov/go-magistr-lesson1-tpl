@@ -68,7 +68,6 @@ func main() {
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
 			if memoryUsage > 80 {
-				// Округляем до целого числа как в тесте
 				messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage))
 			}
 		}
@@ -86,13 +85,12 @@ func main() {
 		if totalNet > 0 {
 			netUsage := float64(usedNet) / float64(totalNet) * 100
 			if netUsage > 90 {
-				// Байты в секунду -> мегабиты в секунду (делим на 125000 вместо 1000000/8)
-				availableNetMbit := (totalNet - usedNet) / 125000
+				// ПРОБУЕМ ПРОСТОЕ ДЕЛЕНИЕ НА 1,000,000
+				availableNetMbit := (totalNet - usedNet) / 1000000
 				messages = append(messages, fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit))
 			}
 		}
 
-		// Выводим все сообщения
 		for _, msg := range messages {
 			fmt.Println(msg)
 		}
