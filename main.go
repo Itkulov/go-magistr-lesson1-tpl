@@ -57,43 +57,44 @@ func main() {
 		totalNet, _ := strconv.ParseUint(values[5], 10, 64)
 		usedNet, _ := strconv.ParseUint(values[6], 10, 64)
 
-		var message string
+		// ВЫВОДИМ ВСЕ ПРОБЛЕМЫ, а не только одну!
+		messages := []string{}
+
+		// Load Average > 30
+		if loadAvg > 30 {
+			messages = append(messages, fmt.Sprintf("Load Average is too high: %.0f", loadAvg))
+		}
 
 		// Memory usage > 80%
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
 			if memoryUsage > 80 {
-				message = fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage)
+				messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage))
 			}
 		}
 
-		// Load Average > 30
-		if message == "" && loadAvg > 30 {
-			message = fmt.Sprintf("Load Average is too high: %.0f", loadAvg)
-		}
-
 		// Disk usage > 90%
-		if message == "" && totalDisk > 0 {
+		if totalDisk > 0 {
 			diskUsage := float64(usedDisk) / float64(totalDisk) * 100
 			if diskUsage > 90 {
 				freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
-				message = fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB)
+				messages = append(messages, fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB))
 			}
 		}
 
 		// Network usage > 90%
-		if message == "" && totalNet > 0 {
+		if totalNet > 0 {
 			netUsage := float64(usedNet) / float64(totalNet) * 100
 			if netUsage > 90 {
-				// Правильный расчет: байты/сек -> мегабиты/сек
-				availableNetBytes := totalNet - usedNet
-				availableNetMbit := availableNetBytes * 8 / 1000000
-				message = fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit)
+				// Байты в секунду -> мегабиты в секунду
+				availableNetMbit := (totalNet - usedNet) * 8 / 1000000
+				messages = append(messages, fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit))
 			}
 		}
 
-		if message != "" {
-			fmt.Println(message)
+		// Выводим все сообщения
+		for _, msg := range messages {
+			fmt.Println(msg)
 		}
 
 		time.Sleep(5 * time.Second)
