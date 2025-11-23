@@ -57,10 +57,9 @@ func main() {
 		totalNet, _ := strconv.ParseUint(values[5], 10, 64)
 		usedNet, _ := strconv.ParseUint(values[6], 10, 64)
 
-		// Проверяем пороги и выводим только одну проблему за опрос (самую критичную)
 		var message string
 
-		// Memory usage > 80% (самый высокий приоритет)
+		// Memory usage > 80%
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
 			if memoryUsage > 80 {
@@ -86,7 +85,9 @@ func main() {
 		if message == "" && totalNet > 0 {
 			netUsage := float64(usedNet) / float64(totalNet) * 100
 			if netUsage > 90 {
-				availableNetMbit := (totalNet - usedNet) / 125000 // байт/сек -> мегабит/сек
+				// Правильный расчет: байты/сек -> мегабиты/сек
+				availableNetBytes := totalNet - usedNet
+				availableNetMbit := availableNetBytes * 8 / 1000000
 				message = fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit)
 			}
 		}
