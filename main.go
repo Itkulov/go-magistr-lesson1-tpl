@@ -10,66 +10,50 @@ import (
 )
 
 func main() {
-	for {
-		resp, err := http.Get("http://srv.msk01.gigacorp.local/_stats")
+	client := &http.Client{Timeout: 5 * time.Second}
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		resp, err := client.Get("http://srv.msk01.gigacorp.local/_stats")
 		if err != nil {
-			fmt.Printf("Error: %v\n", err)
-			time.Sleep(5 * time.Second)
+			fmt.Printf("Error fetching stats: %v\n", err)
 			continue
 		}
-
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			fmt.Printf("Error reading response: %v\n", err)
-			time.Sleep(5 * time.Second)
 			continue
 		}
-
 		values := strings.Split(strings.TrimSpace(string(body)), ",")
-		if len(values) != 7 {
-			fmt.Printf("Invalid data format\n")
-			time.Sleep(5 * time.Second)
+		if len(values) < 7 {
+			fmt.Printf("Invalid response format\n")
 			continue
 		}
 
 		loadAvg, _ := strconv.ParseFloat(values[0], 64)
-		totalMem, _ := strconv.ParseUint(values[1], 10, 64)
-		usedMem, _ := strconv.ParseUint(values[2], 10, 64)
-		totalDisk, _ := strconv.ParseUint(values[3], 10, 64)
-		usedDisk, _ := strconv.ParseUint(values[4], 10, 64)
-		totalNet, _ := strconv.ParseUint(values[5], 10, 64)
-		usedNet, _ := strconv.ParseUint(values[6], 10, 64)
+		netBytes, _ := strconv.ParseFloat(values[1], 64)
+		memTotal, _ := strconv.ParseFloat(values[3], 64)
+		memFree, _ := strconv.ParseFloat(values[4], 64)
+		diskFree, _ := strconv.ParseFloat(values[6], 64)
 
-		var message string
+		memUsed := memTotal - memFree
+		memUsage := memUsed / memTotal * 100
+		diskFreeMb := diskFree / (1024 * 1024)
+		netMbit := netBytes * 8 / 1e6
 
-		memoryUsage := float64(usedMem) / float64(totalMem) * 100
-		if memoryUsage >= 98 {
-			message = fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage)
+		if netMbit > 15 {
+			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", int(netMbit))
 		}
-
-		if message == "" && loadAvg > 30 {
-			message = fmt.Sprintf("Load Average is too high: %.0f", loadAvg)
+		if loadAvg > 30 {
+			fmt.Printf("Load Average is too high: %.0f\n", loadAvg)
 		}
-
-		if message == "" {
-			freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
-			if freeDiskMB < 25000 {
-				message = fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB)
-			}
+		if diskFreeMb < 35000 {
+			fmt.Printf("Free disk space is too low: %d Mb left\n", int(diskFreeMb))
 		}
-
-		if message == "" {
-			availableNetMbit := (totalNet - usedNet) / 1000000
-			if availableNetMbit < 200 {
-				message = fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit)
-			}
+		if memUsage > 80 {
+			fmt.Printf("Memory usage too high: %d%%\n", int(memUsage))
 		}
-
-		if message != "" {
-			fmt.Println(message)
-		}
-
-		time.Sleep(5 * time.Second)
 	}
 }
