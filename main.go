@@ -57,7 +57,6 @@ func main() {
 		totalNet, _ := strconv.ParseUint(values[5], 10, 64)
 		usedNet, _ := strconv.ParseUint(values[6], 10, 64)
 
-		// ВЫВОДИМ ВСЕ ПРОБЛЕМЫ, а не только одну!
 		messages := []string{}
 
 		// Load Average > 30
@@ -69,6 +68,7 @@ func main() {
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
 			if memoryUsage > 80 {
+				// Округляем до целого числа как в тесте
 				messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage))
 			}
 		}
@@ -86,8 +86,8 @@ func main() {
 		if totalNet > 0 {
 			netUsage := float64(usedNet) / float64(totalNet) * 100
 			if netUsage > 90 {
-				// Байты в секунду -> мегабиты в секунду
-				availableNetMbit := (totalNet - usedNet) * 8 / 1000000
+				// Байты в секунду -> мегабиты в секунду (делим на 125000 вместо 1000000/8)
+				availableNetMbit := (totalNet - usedNet) / 125000
 				messages = append(messages, fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit))
 			}
 		}
