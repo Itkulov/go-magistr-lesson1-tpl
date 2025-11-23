@@ -57,42 +57,42 @@ func main() {
 		totalNet, _ := strconv.ParseUint(values[5], 10, 64)
 		usedNet, _ := strconv.ParseUint(values[6], 10, 64)
 
-		messages := []string{}
+		// ВЫВОДИМ ВСЕ СООБЩЕНИЯ БЕЗ ПРИОРИТЕТА
+		hasLoadAvg := loadAvg > 30
+		hasMemory := false
+		hasDisk := false  
+		hasNetwork := false
 
-		// Load Average > 30
-		if loadAvg > 30 {
-			messages = append(messages, fmt.Sprintf("Load Average is too high: %.0f", loadAvg))
-		}
-
-		// Memory usage > 80%
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
-			if memoryUsage > 80 {
-				// Преобразуем в int для точного отображения
-				messages = append(messages, fmt.Sprintf("Memory usage too high: %d%%", int(memoryUsage)))
-			}
+			hasMemory = memoryUsage > 80
 		}
 
-		// Disk usage > 90%
 		if totalDisk > 0 {
 			diskUsage := float64(usedDisk) / float64(totalDisk) * 100
-			if diskUsage > 90 {
-				freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
-				messages = append(messages, fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB))
-			}
+			hasDisk = diskUsage > 90
 		}
 
-		// Network usage > 90%
 		if totalNet > 0 {
 			netUsage := float64(usedNet) / float64(totalNet) * 100
-			if netUsage > 90 {
-				availableNetMbit := (totalNet - usedNet) / 1000000
-				messages = append(messages, fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit))
-			}
+			hasNetwork = netUsage > 90
 		}
 
-		for _, msg := range messages {
-			fmt.Println(msg)
+		// Выводим ВСЕ проблемы
+		if hasLoadAvg {
+			fmt.Printf("Load Average is too high: %.0f\n", loadAvg)
+		}
+		if hasMemory {
+			memoryUsage := float64(usedMem) / float64(totalMem) * 100
+			fmt.Printf("Memory usage too high: %d%%\n", int(memoryUsage))
+		}
+		if hasDisk {
+			freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
+			fmt.Printf("Free disk space is too low: %d Mb left\n", freeDiskMB)
+		}
+		if hasNetwork {
+			availableNetMbit := (totalNet - usedNet) / 1000000
+			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", availableNetMbit)
 		}
 
 		time.Sleep(5 * time.Second)
