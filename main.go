@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -68,7 +69,8 @@ func main() {
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
 			if memoryUsage > 80 {
-				messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage))
+				// Используем math.Round для точного округления
+				messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", math.Round(memoryUsage)))
 			}
 		}
 
@@ -85,7 +87,6 @@ func main() {
 		if totalNet > 0 {
 			netUsage := float64(usedNet) / float64(totalNet) * 100
 			if netUsage > 90 {
-				// ПРОБУЕМ ПРОСТОЕ ДЕЛЕНИЕ НА 1,000,000
 				availableNetMbit := (totalNet - usedNet) / 1000000
 				messages = append(messages, fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit))
 			}
