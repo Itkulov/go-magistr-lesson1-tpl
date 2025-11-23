@@ -41,29 +41,33 @@ func main() {
 		totalNet, _ := strconv.ParseUint(values[5], 10, 64)
 		usedNet, _ := strconv.ParseUint(values[6], 10, 64)
 
-		messages := []string{}
-
-		if loadAvg > 15 {
-			messages = append(messages, fmt.Sprintf("Load Average is too high: %.0f", loadAvg))
-		}
+		var message string
 
 		memoryUsage := float64(usedMem) / float64(totalMem) * 100
-		if memoryUsage > 90 {
-			messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage))
+		if memoryUsage >= 100 {
+			message = fmt.Sprintf("Memory usage too high: %.0f%%", memoryUsage)
 		}
 
-		freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
-		if freeDiskMB < 25000 {
-			messages = append(messages, fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB))
+		if message == "" && loadAvg > 15 {
+			message = fmt.Sprintf("Load Average is too high: %.0f", loadAvg)
 		}
 
-		availableNetMbit := (totalNet - usedNet) / 1000000
-		if availableNetMbit < 1000 {
-			messages = append(messages, fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit))
+		if message == "" {
+			freeDiskMB := (totalDisk - usedDisk) / (1024 * 1024)
+			if freeDiskMB < 25000 {
+				message = fmt.Sprintf("Free disk space is too low: %d Mb left", freeDiskMB)
+			}
 		}
 
-		for _, msg := range messages {
-			fmt.Println(msg)
+		if message == "" {
+			availableNetMbit := (totalNet - usedNet) / 1000000
+			if availableNetMbit < 1000 {
+				message = fmt.Sprintf("Network bandwidth usage high: %d Mbit/s available", availableNetMbit)
+			}
+		}
+
+		if message != "" {
+			fmt.Println(message)
 		}
 
 		time.Sleep(5 * time.Second)
