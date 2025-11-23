@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"math"
 	"net/http"
 	"strconv"
 	"strings"
@@ -69,8 +68,8 @@ func main() {
 		if totalMem > 0 {
 			memoryUsage := float64(usedMem) / float64(totalMem) * 100
 			if memoryUsage > 80 {
-				// Используем math.Round для точного округления
-				messages = append(messages, fmt.Sprintf("Memory usage too high: %.0f%%", math.Round(memoryUsage)))
+				// Преобразуем в int для точного отображения
+				messages = append(messages, fmt.Sprintf("Memory usage too high: %d%%", int(memoryUsage)))
 			}
 		}
 
