@@ -35,25 +35,26 @@ func main() {
 		}
 
 		loadAvg, _ := strconv.ParseFloat(values[0], 64)
+		netBytes, _ := strconv.ParseFloat(values[1], 64)
 		memTotal, _ := strconv.ParseFloat(values[2], 64)
 		memUsed, _ := strconv.ParseFloat(values[4], 64)
-		memPerc := memUsed / memTotal * 100
 		diskFreeBytes, _ := strconv.ParseFloat(values[6], 64)
-		diskFreeMB := diskFreeBytes / (1024 * 1024)
-		netUsage, _ := strconv.ParseFloat(values[1], 64)
-		netMbit := netUsage / (1024 * 1024)
 
-		if loadAvg > 30 {
-			fmt.Printf("Load Average is too high: %.2f\n", loadAvg)
+		memPercent := memUsed / memTotal * 100
+		diskFreeMB := diskFreeBytes / (1024 * 1024)
+		netMbit := netBytes * 8 / 1e6
+
+		if memPercent > 80 {
+			fmt.Printf("Memory usage too high: %d%%\n", int(memPercent))
 		}
-		if memPerc > 80 {
-			fmt.Printf("Memory usage too high: %d%%\n", int(memPerc))
-		}
-		if diskFreeMB < 32000 {
+		if diskFreeMB < 35000 {
 			fmt.Printf("Free disk space is too low: %d Mb left\n", int(diskFreeMB))
 		}
-		if netMbit > 150 {
+		if netMbit > 15 {
 			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", int(netMbit))
+		}
+		if loadAvg > 30 {
+			fmt.Printf("Load Average is too high: %.0f\n", loadAvg)
 		}
 	}
 }
