@@ -20,14 +20,12 @@ func main() {
 			fmt.Printf("Error fetching stats: %v\n", err)
 			continue
 		}
-
 		body, err := io.ReadAll(resp.Body)
 		resp.Body.Close()
 		if err != nil {
 			fmt.Printf("Error reading response: %v\n", err)
 			continue
 		}
-
 		values := strings.Split(strings.TrimSpace(string(body)), ",")
 		if len(values) < 7 {
 			fmt.Printf("Invalid response format\n")
@@ -37,13 +35,17 @@ func main() {
 		loadAvg, _ := strconv.ParseFloat(values[0], 64)
 		netBytes, _ := strconv.ParseFloat(values[1], 64)
 		memTotal, _ := strconv.ParseFloat(values[2], 64)
-		memUsed, _ := strconv.ParseFloat(values[4], 64)
+		memFree, _ := strconv.ParseFloat(values[4], 64)
 		diskFreeBytes, _ := strconv.ParseFloat(values[6], 64)
 
+		memUsed := memTotal - memFree
 		memPercent := memUsed / memTotal * 100
 		diskFreeMB := diskFreeBytes / (1024 * 1024)
-		netMbit := netBytes * 8 / 1e6
+		netMbit := netBytes * 8 / 1e6 // байты в мегабиты
 
+		if loadAvg > 30 {
+			fmt.Printf("Load Average is too high: %.0f\n", loadAvg)
+		}
 		if memPercent > 80 {
 			fmt.Printf("Memory usage too high: %d%%\n", int(memPercent))
 		}
@@ -52,9 +54,6 @@ func main() {
 		}
 		if netMbit > 15 {
 			fmt.Printf("Network bandwidth usage high: %d Mbit/s available\n", int(netMbit))
-		}
-		if loadAvg > 30 {
-			fmt.Printf("Load Average is too high: %.0f\n", loadAvg)
 		}
 	}
 }
